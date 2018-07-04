@@ -22,10 +22,8 @@ import java.util.HashMap;
 
 public class passbook extends AppCompatActivity {
     TextView wal, t;
-    /* private String transactions =
-             "https://horizon-testnet.stellar.org/accounts/GCNE242XH5PQ7JPS7EII52HPV6HDBYDZWO57WFEQJG5G737DOF4ZAAYM/transactions";
-     */private String payments =
-            "https://horizon-testnet.stellar.org/accounts/GCNE242XH5PQ7JPS7EII52HPV6HDBYDZWO57WFEQJG5G737DOF4ZAAYM/payments";
+    String publicKey;
+   private String payments;
     private String TAG = passbook.class.getSimpleName();
     public ListView lv;
     private ProgressDialog pDialog;
@@ -47,6 +45,9 @@ public class passbook extends AppCompatActivity {
             }
         });
 
+        publicKey=getIntent().getStringExtra("pub");
+        payments="https://horizon-testnet.stellar.org/accounts/"+publicKey+"/payments?limit=30&order=desc";
+
         wal = (TextView) findViewById(R.id.wallet);
         String b = getIntent().getStringExtra("balance");
         wal.setText(b);
@@ -63,7 +64,7 @@ public class passbook extends AppCompatActivity {
             super.onPreExecute();
             // Showing progress dialog
             pDialog = new ProgressDialog(passbook.this);
-            pDialog.setMessage("Please wait...");
+            pDialog.setMessage("Loading....");
             pDialog.setCancelable(false);
             pDialog.show();
         }
@@ -80,20 +81,22 @@ public class passbook extends AppCompatActivity {
                     JSONObject pay = new JSONObject(p);
                     JSONObject obj = pay.getJSONObject("_embedded");
                     JSONArray rec = obj.getJSONArray("records");
-                    JSONObject ob = rec.getJSONObject(1);
-                    String accid = ob.getString("from");
-                    String amount = ob.getString("amount");
-                    HashMap<String, String> entry = new HashMap<>();
-                    // adding each child node to HashMap key => value
-                    entry.put("to_acc_id", accid);
-                    entry.put("funds_transferred", amount);
-                    // adding contact to contact list
-                    history.add(entry);
-                    history.add(entry);
-                    history.add(entry);
-                    history.add(entry);
-                    history.add(entry);
-                    history.add(entry);
+                    for (int i=0;i<rec.length();i++)
+                    {
+                        //loop for multiple records --- PRAGYA
+                        JSONObject ob = rec.getJSONObject(i);
+                        String accid = ob.getString("to");
+                        String amount = ob.getString("amount");
+                        String timestamp = ob.getString("created_at");
+                        HashMap<String, String> entry = new HashMap<>();
+                        // adding each child node to HashMap key => value
+
+                        entry.put("to_acc_id", accid);
+                        entry.put("funds_transferred", amount);
+                        entry.put("time", timestamp);
+                        // adding contact to contact list
+                        history.add(entry);
+                    }
                 }
                 catch (final JSONException e) {
                     Log.e(TAG, "Json parsing error: " + e.getMessage());
@@ -111,8 +114,8 @@ public class passbook extends AppCompatActivity {
                 pDialog.dismiss();
             ListAdapter adapter = new SimpleAdapter(
                     passbook.this, history,
-                    R.layout.list_item_passbook, new String[]{"to_acc_id", "funds_transferred"},
-                    new int[]{R.id.rec_id, R.id.balance});
+                    R.layout.list_item_passbook, new String[]{"to_acc_id", "funds_transferred", "time"},
+                    new int[]{R.id.rec_id, R.id.balance, R.id.time_stamp});
 
             lv.setAdapter(adapter);
         }

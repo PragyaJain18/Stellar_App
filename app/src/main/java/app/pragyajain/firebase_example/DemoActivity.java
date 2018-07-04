@@ -28,37 +28,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-class User {
-    String username;
-    String email;
-    String password;
-    String publicKey;
-    String privateKey;
-
-    User() {
-    }
-
-    ;
-
-    //    private String gets(String username){
-//        this.username = username;
-//        return this.username;
-//    }
-    User(String username, String email, String password, String publicKey, String privateKey) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.publicKey = publicKey;
-        this.privateKey = privateKey;
-
-    }
-}
-
-
 public class DemoActivity extends AppCompatActivity {
 
     private ListView mLvData;
     private ArrayList<User> mListData = new ArrayList<>();
+
     private DatabaseReference myRef;
     private final String TAG = DemoActivity.class.getSimpleName();
 
@@ -69,14 +43,14 @@ public class DemoActivity extends AppCompatActivity {
 
         mLvData = (ListView) findViewById(R.id.list);
         myRef = FirebaseDatabase.getInstance().getReference();
-        Toast.makeText(DemoActivity.this, "error doesnot happen here ", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(DemoActivity.this, "error doesnot happen here ", Toast.LENGTH_SHORT).show();
 
 
-        writeNewUser(SystemClock.currentThreadTimeMillis() + "", "Siddhant8", "siddhant@gmail.com98", "siddhan8t", "dfuagfla789tbvluybvlyuav", "hjvfsvcsl7897uvsbvlshbv");
+//        writeNewUser(SystemClock.currentThreadTimeMillis() + "", "Siddhant8", "siddhant@gmail.com98", "siddhan8t", "dfuagfla789tbvluybvlyuav", "hjvfsvcsl7897uvsbvlshbv");
 
     }
 
-    private void writeNewUser(String userId, String name, String email, String password, String publicKey, String privateKey) {
+    /*private void writeNewUser(String userId, String name, String email, String password, String publicKey, String privateKey) {
         User user = new User(name, email, password, publicKey, privateKey);
 //        showProgressDialog();
         myRef.child("users").child(userId).setValue(user, new DatabaseReference.CompletionListener() {
@@ -92,7 +66,7 @@ public class DemoActivity extends AppCompatActivity {
             }
         });
 
-    }
+    }*/
 
 
     public class ListAdapter extends BaseAdapter {

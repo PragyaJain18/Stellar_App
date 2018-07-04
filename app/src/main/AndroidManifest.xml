@@ -12,22 +12,28 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
-                            </intent-filter>
+            </intent-filter>
         </activity>
         <activity
             android:name=".Home_page"
             android:label="@string/title_activity_home_page"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".passbook"
-            android:label="Passbook"
-            android:exported="true"/>
-        <activity android:name=".change_pswd"
-            android:label="Change Password"
-            android:exported="true"/>
-        <activity android:name=".SendActivity"
-            android:label="Fund Transfers"
-            android:exported="true"/>
+        <activity
+            android:name=".passbook"
+            android:exported="true"
+            android:label="Passbook" />
+        <activity
+            android:name=".change_pswd"
+            android:exported="true"
+            android:label="Change Password" />
+        <activity
+            android:name=".SendActivity"
+            android:exported="true"
+            android:label="Fund Transfers" />
+        <activity android:name=".Profile"
+            android:exported="true"></activity>
     </application>
 
 </manifest>

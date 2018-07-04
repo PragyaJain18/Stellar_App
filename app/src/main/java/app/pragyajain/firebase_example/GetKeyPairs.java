@@ -1,9 +1,9 @@
 package app.pragyajain.firebase_example;
 
 //import java.security.KeyPair;
-//import org.stellar.sdk.KeyPair;
+import org.stellar.sdk.KeyPair;
 
-/*class GetKeyPairs
+class GetKeyPairs
 {
     public String [] pairofkeys()
     {
@@ -14,7 +14,7 @@ package app.pragyajain.firebase_example;
         String [] k = {pvt_key, pub_key};
         return(k);
     }
-    GetKeyPairs k= new GetKeyPairs();
+    /*GetKeyPairs k= new GetKeyPairs();
 		String [] key = k.pairofkeys();
-		System.out.println(key[0]+ "\n\n" + key[1]);
-}*/
+		System.out.println(key[0]+ "\n\n" + key[1]);*/
+}

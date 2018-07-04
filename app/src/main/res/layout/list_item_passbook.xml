@@ -21,13 +21,13 @@
         android:textColor="#5d5d5d"
         android:textSize="12sp"/>
 
-    <TextView
+  <!--  <TextView
         android:id="@+id/status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
         android:textColor="#5d5d5d"
-        android:textSize="12sp" />
+        android:textSize="12sp" />-->
     <TextView
         android:id="@+id/time_stamp"
         android:layout_width="wrap_content"
