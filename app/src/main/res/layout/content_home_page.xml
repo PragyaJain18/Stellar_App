@@ -77,8 +77,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:src="@drawable/passb"
                     android:maxHeight="50dp"/>
+                    <!--android:src="@drawable/passb"-->
+
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -119,8 +120,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:src="@drawable/transaction"
                     android:maxHeight="50dp"/>
+                    <!--android:src="@drawable/transaction"-->
+
 
                 <TextView
                     android:layout_width="wrap_content"

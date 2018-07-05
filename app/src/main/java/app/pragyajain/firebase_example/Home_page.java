@@ -21,15 +21,35 @@ import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Home_page extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    private DatabaseReference myRef;
+    private FirebaseAuth mAuth; //FirebaseAuth object for Authentication
+    private FirebaseAuth.AuthStateListener mAuthListener; //Listener for FirebaseAuth object
+    private String uid;
+    private String u;
+    private String v;
     public String accno, bal;
-    String userId = "GCNE242XH5PQ7JPS7EII52HPV6HDBYDZWO57WFEQJG5G737DOF4ZAAYM";
-    private String profile = "https://horizon-testnet.stellar.org/accounts/" + userId;
+    //String userId = "GCNE242XH5PQ7JPS7EII52HPV6HDBYDZWO57WFEQJG5G737DOF4ZAAYM";
+    String userId;
+
+    private String profile;
     private String TAG = Home_page.class.getSimpleName();
     TextView accountID, current_balance;
     private ProgressDialog pDialog;
@@ -38,6 +58,8 @@ public class Home_page extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_page);
+
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         gridLayout=(GridLayout)findViewById(R.id.mainGrid);
@@ -54,7 +76,14 @@ public class Home_page extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        new  updateText().execute();
+        myRef = FirebaseDatabase.getInstance().getReference();
+
+        mAuth = FirebaseAuth.getInstance();
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        uid=user.getUid();
+
+     getData(uid);
     }
     private void setSingleEvent(GridLayout gridLayout) {
         for(int i = 0; i<gridLayout.getChildCount();i++){
@@ -70,11 +99,14 @@ public class Home_page extends AppCompatActivity
                         Bundle wallet = new Bundle();
                         wallet.putString("balance", bal);
                         intent.putExtras(wallet);
+                        intent.putExtra("pub",u);
                         startActivity(intent);
                     }
                     else if (finalI == 1)
                     {
                         Intent intent = new Intent(Home_page.this, SendActivity.class);
+                        intent.putExtra("pub",u);
+                        intent.putExtra("pvt",v);
                         startActivity(intent);
                     }
                 }
@@ -82,6 +114,17 @@ public class Home_page extends AppCompatActivity
         }
     }
 
+    private void showProgressDialog() {
+            if (pDialog != null && !pDialog.isShowing())
+            pDialog .show();
+    }
+    /**
+     * Method to hide progress dialog
+     */
+    private void hideProgressDialog() {
+        if (pDialog != null && pDialog.isShowing())
+            pDialog.dismiss();
+    }
     private class updateText extends AsyncTask<String, String, String>
     {
         @Override
@@ -96,7 +139,8 @@ public class Home_page extends AppCompatActivity
         protected String doInBackground(String... arg0) {
             HttpHandler sh = new HttpHandler();
             // Making a request to url and getting response
-            String file = sh.makeServiceCall(profile);
+            String p = arg0[0];
+            String file = sh.makeServiceCall(p);
             Log.e(TAG, "Response from url: " + file);
             if (file != null)
             {
@@ -107,17 +151,27 @@ public class Home_page extends AppCompatActivity
             }
         }
         protected void onPostExecute(String file) {
-            //super.onPostExecute(result);
+
             if (pDialog.isShowing())
                 pDialog.dismiss();
             try {
                 JSONObject obj = new JSONObject(file);
                 accno = obj.getString("id");
                 JSONArray balance = obj.getJSONArray("balances");
-                JSONObject b = balance.getJSONObject(0);
-                bal = b.getString("balance");
-                accountID.setText(accno);
-                current_balance.setText(bal);
+                for(int i=0;i<balance.length();i++)
+                {
+                    JSONObject b = balance.getJSONObject(i);
+                    String asset = b.getString("asset_type");
+                    if(asset.equals("native"))
+                    {
+                        bal = b.getString("balance");
+                        accountID.setText(accno);
+                        current_balance.setText(bal);
+                        break;
+                    }
+                    else
+                        accountID.setText("Faulty");
+                }
 
             } catch (JSONException e) {
                 Log.e(TAG, "Json parsing error: " + e.getMessage());
@@ -133,7 +187,6 @@ public class Home_page extends AppCompatActivity
             super.onBackPressed();
         }
     }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -164,13 +217,46 @@ public class Home_page extends AppCompatActivity
             Intent intent = new Intent(this, change_pswd.class);
             startActivity(intent);
         } else if (id == R.id.logout)
-        {
+        {   mAuth.signOut();
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    public void getData(String uid)
+    {
+        showProgressDialog();
+        myRef= myRef.child("users").child(uid);
+        myRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // This method is called once with the initial value and again
+                // whenever data at this location is updated.
+                if (dataSnapshot == null) {
+                    return;
+                }
+
+                HashMap<String,String> user =(HashMap<String, String>) dataSnapshot.getValue();
+//                HashMap<String,String> user = (HashMap<String, String>) dataSnapshot.getValue();
+//              String u =dataSnapshot.child("publicKey").getValue().toString();
+                u = user.get("publicKey");
+                v= user.get("privateKey");
+                profile = "https://horizon-testnet.stellar.org/accounts/" + u;
+                hideProgressDialog();
+                new  updateText().execute(profile);
+               // Log.d(TAG, "Value is: " + value);
+        }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", error.toException());
+            }
+        });
+
     }
 
 }

@@ -1,7 +1,9 @@
 package app.pragyajain.firebase_example;
 
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -84,23 +86,17 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onStart() {
             super.onStart();
-
             //setting auth listener for Authentication object
             mAuth.addAuthStateListener(mAuthListener);
         }
-
         @Override
         public void onStop() {
             super.onStop();
             if (mAuthListener != null) {
-
                 //removing auth listener for Authentication object
                 mAuth.removeAuthStateListener(mAuthListener);
             }
         }
-
-
-
         /**
          * Method to show progress dialog
          */
@@ -108,7 +104,6 @@ public class MainActivity extends AppCompatActivity {
             if (mProgressDialog != null && !mProgressDialog.isShowing())
                 mProgressDialog.show();
         }
-
         /**
          * Method to hide progress dialog
          */
@@ -116,8 +111,6 @@ public class MainActivity extends AppCompatActivity {
             if (mProgressDialog != null && mProgressDialog.isShowing())
                 mProgressDialog.dismiss();
         }
-
-
     /**
      * Method to create account on Firebase
      * @param email or user id of user
@@ -128,7 +121,6 @@ public class MainActivity extends AppCompatActivity {
         if (!validateForm()) {
             return;
         }
-
         showProgressDialog();
 
         mAuth.createUserWithEmailAndPassword(email, password)
@@ -139,18 +131,40 @@ public class MainActivity extends AppCompatActivity {
                         Log.d(TAG,"Create Account process complete with false ");
                         if (task.isSuccessful()) {
                             Log.d(TAG,"Sign Up Successfully");
-                            Toast.makeText(MainActivity.this, "Sign Up Successfully", Toast.LENGTH_SHORT).show();
-                            Intent success = new Intent(MainActivity.this,Home_page.class);
-                            startActivity(success);
+                            //Toast.makeText(MainActivity.this, "Sign Up Successfully", Toast.LENGTH_SHORT).show();
+                            AlertDialog alertDialog1 = new AlertDialog.Builder(MainActivity.this).create();
+                            alertDialog1.setTitle("Successful");
+                            alertDialog1.setMessage("Sign Up Successfully");
+                            alertDialog1.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.dismiss();
+                                            Intent success = new Intent(MainActivity.this,Profile.class);
+                                            success.putExtra("email",mEmailField.getText().toString());
+                                            success.putExtra("password",mPasswordField.getText().toString());
+                                            startActivity(success);
+                                        }
+                                    });
+                            alertDialog1.show();
+
                         }else{
                             Log.d(TAG,"Sign Up Failed");
-                            Toast.makeText(MainActivity.this, "Sign Up Failed.", Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(MainActivity.this, "Sign Up Failed.", Toast.LENGTH_SHORT).show();
+                            AlertDialog alertDialog2 = new AlertDialog.Builder(MainActivity.this).create();
+                            alertDialog2.setTitle("Failed");
+                            alertDialog2.setMessage("Sign Up Failed");
+                            alertDialog2.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.dismiss();
+                                        }
+                                    });
+                            alertDialog2.show();
                         }
                         hideProgressDialog();
                     }
                 });
     }
-
         /**
          * Method to sign in with user id and password
          * @param email  email of user
@@ -161,7 +175,6 @@ public class MainActivity extends AppCompatActivity {
             if (!validateForm()) {
                 return;
             }
-
             showProgressDialog();
             mAuth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -169,22 +182,49 @@ public class MainActivity extends AppCompatActivity {
                         public void onComplete(Task<AuthResult> task) {
                             if (task.isSuccessful()) {
                                 Log.d(TAG,"Sign in Successfully");
-                                Toast.makeText(MainActivity.this, "Sign Up Successfully", Toast.LENGTH_SHORT).show();
+                                //Toast.makeText(MainActivity.this, "Sign Up Successfully", Toast.LENGTH_SHORT).show();
+                             /*   AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+                                alertDialog.setTitle("Successful");
+                                alertDialog.setMessage("Sign Up Successfully");
+                                alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                dialog.dismiss();
+                                            }
+                                        });
+                                alertDialog.show();*/
                                 Intent success = new Intent(MainActivity.this,Home_page.class);
                                 startActivity(success);
                             }else{
                                 Log.d(TAG,"Sign in Failed");
-                                Toast.makeText(MainActivity.this, "Sign Up Failed.", Toast.LENGTH_SHORT).show();
+                                //Toast.makeText(MainActivity.this, "Sign Up Failed.", Toast.LENGTH_SHORT).show();
+                                AlertDialog alertDialog1 = new AlertDialog.Builder(MainActivity.this).create();
+                                alertDialog1.setTitle("Failed");
+                                alertDialog1.setMessage("Sign In Failed");
+                                alertDialog1.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                dialog.dismiss();
+                                            }
+                                        });
+                                alertDialog1.show();
                                 Log.e(TAG,"Sign in Failed with error :"+task.getException());
-                                Toast.makeText(MainActivity.this,"Authentication Failed",Toast.LENGTH_SHORT).show();
+                                //Toast.makeText(MainActivity.this,"Authentication Failed",Toast.LENGTH_SHORT).show();
+                                AlertDialog alertDialog2 = new AlertDialog.Builder(MainActivity.this).create();
+                                alertDialog2.setTitle("Failed");
+                                alertDialog2.setMessage("Authentication Failed");
+                                alertDialog2.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                dialog.dismiss();
+                                            }
+                                        });
+                                alertDialog2.show();
                             }
                             hideProgressDialog();
                         }
                     });
         }
-
-
-
 //        /**
 //         * Method to sign out
 //         */
@@ -192,7 +232,6 @@ public class MainActivity extends AppCompatActivity {
 //            mAuth.signOut();
 //
 //        }
-
         /**
          * Method to check all validation is success or not
          * @return true is validation true else false
@@ -219,7 +258,4 @@ public class MainActivity extends AppCompatActivity {
 
             return valid;
         }
-
-
-    }
-
+}
