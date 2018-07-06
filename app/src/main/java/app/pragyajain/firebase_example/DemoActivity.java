@@ -35,7 +35,6 @@ public class DemoActivity extends AppCompatActivity {
 
     private DatabaseReference myRef;
     private final String TAG = DemoActivity.class.getSimpleName();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,10 +46,10 @@ public class DemoActivity extends AppCompatActivity {
 
 
 //        writeNewUser(SystemClock.currentThreadTimeMillis() + "", "Siddhant8", "siddhant@gmail.com98", "siddhan8t", "dfuagfla789tbvluybvlyuav", "hjvfsvcsl7897uvsbvlshbv");
-
+        getDatFromDataBase();
     }
 
-    /*private void writeNewUser(String userId, String name, String email, String password, String publicKey, String privateKey) {
+   /* private void writeNewUser(String userId, String name, String email, String password, String publicKey, String privateKey) {
         User user = new User(name, email, password, publicKey, privateKey);
 //        showProgressDialog();
         myRef.child("users").child(userId).setValue(user, new DatabaseReference.CompletionListener() {
@@ -65,8 +64,8 @@ public class DemoActivity extends AppCompatActivity {
                 }
             }
         });
+*/
 
-    }*/
 
 
     public class ListAdapter extends BaseAdapter {

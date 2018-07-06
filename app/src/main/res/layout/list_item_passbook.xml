@@ -5,21 +5,28 @@
     android:orientation="vertical"
     android:padding="@dimen/activity_horizontal_margin">
 
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/rec_id"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_margin="10dp"
-    android:textColor="@color/colorPrimaryDark"
-    android:textSize="12sp" />
+
+
+    <TextView
+        android:id="@+id/rec_id"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:layout_weight="2"
+        android:textColor="#0099ff"
+        android:textSize="22sp" />
 
     <TextView
         android:id="@+id/balance"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
-        android:textColor="#5d5d5d"
-        android:textSize="12sp"/>
+        android:layout_weight="1"
+        android:textAlignment="textEnd"
+        android:textColor="#c3868686"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
 
   <!--  <TextView
         android:id="@+id/status"
@@ -30,9 +37,10 @@
         android:textSize="12sp" />-->
     <TextView
         android:id="@+id/time_stamp"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
-        android:textColor="#5d5d5d"
-        android:textSize="12sp"/>
+        android:textColor="#000000"
+        android:textSize="12sp"
+        android:layout_weight="1"/>
 </LinearLayout>
