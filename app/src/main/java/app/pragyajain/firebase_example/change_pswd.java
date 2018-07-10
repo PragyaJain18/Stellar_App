@@ -33,7 +33,7 @@ public class change_pswd extends AppCompatActivity {
         setContentView(R.layout.password_change);
 
         //Toolbar
-        Toolbar toolbar = (Toolbar) findViewById(R.id.tb);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -43,6 +43,7 @@ public class change_pswd extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(getApplicationContext(),Home_page.class));
+                finish();
             }
         });
 

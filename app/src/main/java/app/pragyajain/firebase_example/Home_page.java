@@ -33,6 +33,7 @@ import com.google.firebase.database.ValueEventListener;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -49,7 +50,6 @@ public class Home_page extends AppCompatActivity
     private String email;
     private String name;
     private String bal;
-    //String userId = "GCNE242XH5PQ7JPS7EII52HPV6HDBYDZWO57WFEQJG5G737DOF4ZAAYM";
 
     private String profile;
     private String TAG = Home_page.class.getSimpleName();
@@ -59,8 +59,11 @@ public class Home_page extends AppCompatActivity
     private ImageButton passbook;
     private ImageButton send;
 
+    private TextView nav_user;
+    private TextView nav_mail;
+
     private ProgressDialog pDialog;
-    GridLayout gridLayout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,11 +86,11 @@ public class Home_page extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-      /*  View hview= navigationView.getHeaderView(0);
-        TextView nav_user = (TextView)hview.findViewById(R.id.muser);
-*/
-      getData();
-      //  new  updateText().execute();
+        View hview= navigationView.getHeaderView(0);
+        nav_user = (TextView)hview.findViewById(R.id.textv);
+        nav_mail =(TextView)hview.findViewById(R.id.memail);
+
+        getData();
 
         passbook.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -219,11 +222,12 @@ public class Home_page extends AppCompatActivity
             startActivity(intent);
 
         } else if (id == R.id.logout)
-        {   mAuth.signOut();
-            //onDestroy();
+        {   mAuth = FirebaseAuth.getInstance();
+            mAuth.signOut();
             Intent intent = new Intent(this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
-            finish();
+            this.finish();
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -254,7 +258,10 @@ public class Home_page extends AppCompatActivity
                 email = user.get("email");
                 name = user.get("username");
                 accountHolder.setText(name);
-                //  v= user.get("privateKey");
+
+                nav_user.setText(name);
+                nav_mail.setText(email);
+
                 profile = "https://horizon-testnet.Stellar.org/accounts/" + pub;
                 hideProgressDialog();
                 new  updateText().execute(profile);

@@ -30,7 +30,7 @@ import java.util.HashMap;
 public class passbook extends AppCompatActivity {
     TextView wal, t;
     String publicKey;
-   private String payments;
+    private String payments;
     private String TAG = passbook.class.getSimpleName();
     public ListView lv;
     private ProgressDialog pDialog;
@@ -73,6 +73,11 @@ public class passbook extends AppCompatActivity {
         new passbook.display_history().execute();
     }
 
+    public void onBackPressed()
+    {
+        finish();
+    }
+
     private class display_history extends AsyncTask<Void, Void, Void> {
 
         @Override
@@ -109,77 +114,18 @@ public class passbook extends AppCompatActivity {
                         // adding each child node to HashMap key => value
 
                         if(from_id.equals(publicKey)){
-
-                         /*   myRef.addValueEventListener(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(DataSnapshot dataSnapshot) {
-                                    // This method is called once with the initial value and again
-                                    // whenever data at this location is updated.
-                                    if (dataSnapshot == null) {
-                                        return;
-                                    }
-                                    for (DataSnapshot mDataSnapshot : dataSnapshot.getChildren()) {
-                                       rpubK= (String) String.valueOf(mDataSnapshot.child("publicKey").getValue());
-                                        //rpubK= (String) mDataSnapshot.child("publicKey").getValue();
-                                        // phone =user.get("phone");
-                                        if( rpubK == to_id ){
-                                            phone= (String)  String.valueOf(mDataSnapshot.child("phone").getValue());
-                                            entry.put("acc_id", "To: "+phone);
-                                            entry.put("funds_transferred", "-"+amount);
-                                            entry.put("time", "At: "+ timestamp);
-                                            history.add(entry);
-                                            break;
-                                        }
-                                    }
-
-                                    Log.d(TAG, "Value is: " + rpubK);
-                                }
-                                @Override
-                                public void onCancelled(DatabaseError error) {
-                                    // Failed to read value
-                                    Log.w(TAG, "Failed to read value.", error.toException());
-                                }
-                            });*/
-                            entry.put("acc_id", "To: "+to_id);
+                            entry.put("caption", "Money Sent");
+                            entry.put("acc_id", to_id);
                             entry.put("funds_transferred", "-"+amount);
 
                         }
                         else{
-                           /* myRef.addValueEventListener(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(DataSnapshot dataSnapshot) {
-                                    // This method is called once with the initial value and again
-                                    // whenever data at this location is updated.
-                                    if (dataSnapshot == null) {
-                                        return;
-                                    }
-                                    for (DataSnapshot mDataSnapshot : dataSnapshot.getChildren()) {
-                                        rpubK= (String) String.valueOf(mDataSnapshot.child("publicKey").getValue());
-                                        // phone =user.get("phone");
-                                        if(rpubK.contentEquals(from_id)){
-                                            phone= (String) String.valueOf(mDataSnapshot.child("phone").getValue());
-                                            entry.put("acc_id", "From: " +phone);
-                                            entry.put("funds_transferred", "+"+amount);
-                                            entry.put("time", "At: "+timestamp);
-                                            history.add(entry);
-                                            break;
-                                        }
-                                    }
-//                                    history.add(entry);
-                                    Log.d(TAG, "Value is: " + rpubK);
-                                }
-                                @Override
-                                public void onCancelled(DatabaseError error) {
-                                    // Failed to read value
-                                    Log.w(TAG, "Failed to read value.", error.toException());
-                                }
-                            });*/
-
-                            entry.put("acc_id", "From: " +from_id);
+                            entry.put("caption", "Money Received");
+                            entry.put("acc_id", from_id);
                             entry.put("funds_transferred", "+"+amount);
                         }
                         // adding contact to contact list
-                        entry.put("time", "At: "+ timestamp);
+                        entry.put("time", timestamp);
                         history.add(entry);
                     }
                 }
@@ -199,8 +145,8 @@ public class passbook extends AppCompatActivity {
                 pDialog.dismiss();
             ListAdapter adapter = new SimpleAdapter(
                     passbook.this, history,
-                    R.layout.list_item_passbook, new String[]{"acc_id", "funds_transferred", "time"},
-                    new int[]{R.id.rec_id, R.id.balance, R.id.time_stamp});
+                    R.layout.list_item_passbook, new String[]{"caption","acc_id", "funds_transferred", "time"},
+                    new int[]{R.id.title,R.id.rec_id, R.id.balance, R.id.time_stamp});
 
             lv.setAdapter(adapter);
         }

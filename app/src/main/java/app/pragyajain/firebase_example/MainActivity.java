@@ -78,25 +78,8 @@ public class MainActivity extends AppCompatActivity {
             mSign.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if (!validateForm()){
-                        AlertDialog alertDialog2 = new AlertDialog.Builder(MainActivity.this).create();
-                        alertDialog2.setTitle("Error");
-                        alertDialog2.setMessage("Fill the required fields");
-                        alertDialog2.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        dialog.dismiss();
-                                    }
-                                });
-                        alertDialog2.show();
-                        return;
-                    }
-                    else{ Intent success = new Intent(MainActivity.this,Profile.class);
-                    success.putExtra("email",mEmailField.getText().toString());
-                    success.putExtra("password",mPasswordField.getText().toString());
-                    onStop();
+                    Intent success = new Intent(MainActivity.this,Profile.class);
                     startActivity(success);
-                    }
                                  }
             });
         }
@@ -145,12 +128,13 @@ public class MainActivity extends AppCompatActivity {
 
                                 Intent success = new Intent(MainActivity.this,Home_page.class);
                                 startActivity(success);
+                                finish();
                             }else
                                 {
                                 Log.e(TAG,"Sign in Failed with error :"+task.getException());
                                 AlertDialog alertDialog2 = new AlertDialog.Builder(MainActivity.this).create();
                                 alertDialog2.setTitle("Failed");
-                                alertDialog2.setMessage("Authentication Failed. Click Sign Up or Try Again");
+                                alertDialog2.setMessage("Invalid Credentials");
                                 alertDialog2.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
                                         new DialogInterface.OnClickListener() {
                                             public void onClick(DialogInterface dialog, int which) {

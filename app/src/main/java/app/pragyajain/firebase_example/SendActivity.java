@@ -8,6 +8,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -55,11 +56,13 @@ public class SendActivity extends AppCompatActivity
     private String pvtK;
     private String rpubK;
     private String mamt;
+    private  String phone;
+    private String mphone;
     private ProgressDialog pDialog;
     private String status;
-    public String message;
+    private String message;
     private String balance;
-
+    private boolean flag = false;
     private DatabaseReference myRef;
     private FirebaseAuth mAuth; //FirebaseAuth object for Authentication
     private FirebaseAuth.AuthStateListener mAuthListener; //Listener for FirebaseAuth object
@@ -82,6 +85,7 @@ public class SendActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(getApplicationContext(),Home_page.class));
+                finish();
             }
         });
 
@@ -98,20 +102,45 @@ public class SendActivity extends AppCompatActivity
         msend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                if(!validateForm())
+                {
+                    return ;
+                }
 //                mid = mcustid.getText().toString();
                 mamt= mamount.getText().toString();
-                pDialog = new ProgressDialog(SendActivity.this);
-                pDialog.setMessage("Please Do Not Refresh Or Cancel...");
-                pDialog.setCancelable(false);
-                pDialog.show();
-                getCustDet();
+                if(Integer.parseInt(mamt)>0)
+                {
+                    pDialog = new ProgressDialog(SendActivity.this);
+                    pDialog.setMessage("Checking Phone no is valid or Not");
+                    pDialog.setCancelable(false);
+                    pDialog.show();
+                    getData();
+                    pDialog.dismiss();
+                }
+                else
+                {
+                    AlertDialog alertDialog2 = new AlertDialog.Builder(SendActivity.this).create();
+                    alertDialog2.setTitle("Failed");
+                    alertDialog2.setMessage("ReEnter amount");
+                    alertDialog2.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                    alertDialog2.show();
+                }
+
             }
         });
     }
 
+    public void onBackPressed()
+    {
+        finish();
+    }
     public void alertbox(){
-        builder.setMessage("Do you want to continue the transaction ?"+"\n To: "+mid+"\n Amount: "+mamt)
+        builder.setMessage("Are You Sure ! \n You want to Transfer"+"\n\n To: "+mid+"\n\n Amount: "+mamt)
                 .setCancelable(false)
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
@@ -122,8 +151,7 @@ public class SendActivity extends AppCompatActivity
                     public void onClick(DialogInterface dialog, int id) {
                         //  Action for 'NO' Button
                         dialog.dismiss();
-                        Toast.makeText(getApplicationContext(),"you choose no action for alertbox",
-                                Toast.LENGTH_SHORT).show();
+
                     }
                 });
         //Creating dialog box
@@ -152,6 +180,19 @@ public class SendActivity extends AppCompatActivity
                                 if(userInput.getText().toString().equals(pin)){
                                     new SendPostRequest().execute();
                                 }
+                                else{
+                                    AlertDialog alertDialog2 = new AlertDialog.Builder(SendActivity.this).create();
+                                    alertDialog2.setTitle("Failed");
+                                    alertDialog2.setMessage("ReEnter your pin");
+                                    alertDialog2.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                                            new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    dialog.dismiss();
+                                                    hello();
+                                                }
+                                            });
+                                    alertDialog2.show();
+                                }
                             }
                         })
                 .setNegativeButton("Cancel",
@@ -174,8 +215,6 @@ public class SendActivity extends AppCompatActivity
         mAuth = FirebaseAuth.getInstance();
         mid = mcustid.getText().toString();
         myRef.addValueEventListener(new ValueEventListener() {
-        String phone;
-        String bup;
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // This method is called once with the initial value and again
@@ -191,10 +230,25 @@ public class SendActivity extends AppCompatActivity
                     phone= (String) String.valueOf(mDataSnapshot.child("phone").getValue());
                    // phone =user.get("phone");
                     if(phone.contentEquals(mid)){
+                        flag = true;
                         rpubK= (String) mDataSnapshot.child("publicKey").getValue();
-                        getData();
+                        alertbox();
                         break;
                     }
+
+                }
+                if(flag==false){
+                    AlertDialog alertDialog2 = new AlertDialog.Builder(SendActivity.this).create();
+                    alertDialog2.setTitle("Failed");
+                    alertDialog2.setMessage("Invalid Number");
+                    alertDialog2.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                    alertDialog2.show();
+                    return;
                 }
 
                 Log.d(TAG, "Value is: " + rpubK);
@@ -216,6 +270,9 @@ public class SendActivity extends AppCompatActivity
         uid=user.getUid();
         myRef= myRef.child(uid);
         myRef.addValueEventListener(new ValueEventListener() {
+
+            String check = mcustid.getText().toString();
+
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // This method is called once with the initial value and again
@@ -226,10 +283,25 @@ public class SendActivity extends AppCompatActivity
 
                 // HashMap<String,String> user =(HashMap<String, String>) dataSnapshot.child(uid).getChildren();
                 HashMap<String,String> user = (HashMap<String, String>) dataSnapshot.getValue();
+                mphone = user.get("phone");
                 pin=user.get("pin");
                 pubK = user.get("publicKey");
                 pvtK= user.get("privateKey");
-                    alertbox();
+                if(!(mphone.equals(check)))
+                    getCustDet();
+                else{
+                    AlertDialog alertDialog2 = new AlertDialog.Builder(SendActivity.this).create();
+                    alertDialog2.setTitle("Failed");
+                    alertDialog2.setMessage("Invalid Number");
+                    alertDialog2.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                    alertDialog2.show();
+                    return;
+                }
                  Log.d(TAG, "Value is: " + pubK);
             }
             @Override
@@ -243,7 +315,7 @@ public class SendActivity extends AppCompatActivity
 
         protected void onPreExecute(){
             pDialog = new ProgressDialog(SendActivity.this);
-            pDialog.setMessage("Please Do Not Refresh Or Cancel...");
+            pDialog.setMessage("Processing...");
             pDialog.setCancelable(false);
             pDialog.show();
         }
@@ -252,7 +324,7 @@ public class SendActivity extends AppCompatActivity
             try{
                 //hashMap function to be called
                 //HashMap(mid);
-                URL url = new URL("http://192.168.20.74:4000/Payment");
+                URL url = new URL("http://192.168.13.58:4000/Payment");
                 JSONObject postDataParams = new JSONObject();
                 postDataParams.put("senderPublicKey", pubK);//public key of sender
                 postDataParams.put("senderPrivateKey",pvtK );// private key of sender
@@ -303,10 +375,13 @@ public class SendActivity extends AppCompatActivity
             if (pDialog.isShowing())
                 pDialog.dismiss();
             try {
-                JSONParser parser = new JSONParser();
-                JSONObject obj = (JSONObject) parser.parse(result);
+                JSONObject obj = new JSONObject(result);
                 status = obj.getString("success");
-                message= obj.getString("message");
+                message = obj.getString("message");
+                if(status=="1")
+                {
+                    //go to transaction_success activity
+                }
 
                 //Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
 
@@ -323,6 +398,7 @@ public class SendActivity extends AppCompatActivity
                             dialog.dismiss();
                             Intent k = new Intent(SendActivity.this,Home_page.class);
                             startActivity(k);
+                            finish();
                         }
                     });
             alertDialog.show();
@@ -349,6 +425,42 @@ public class SendActivity extends AppCompatActivity
             result.append(URLEncoder.encode(value.toString(), "UTF-8"));
         }
         return result.toString();
+    }
+
+    private boolean validateForm() {
+        boolean valid = true;
+
+        String phone = mcustid.getText().toString();
+
+        if (TextUtils.isEmpty(phone)) {
+            mcustid.setError("Required.");
+            valid = false;
+        } else { if((phone.length()!=10)){
+
+            valid = false;
+            AlertDialog alertDialog = new AlertDialog.Builder(SendActivity.this).create();
+            alertDialog.setTitle("Failed");
+            alertDialog.setMessage("phone number of incorrect length");
+            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Try Again",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+            alertDialog.show();
+        }
+            mcustid.setError(null);
+        }
+
+        String amount = mamount.getText().toString();
+        if (TextUtils.isEmpty(amount)) {
+            mamount.setError("Required.");
+            valid = false;
+        } else {
+            mamount.setError(null);
+        }
+
+        return valid;
     }
 }//end of class
 
