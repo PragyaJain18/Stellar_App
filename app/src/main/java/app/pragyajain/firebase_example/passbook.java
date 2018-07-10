@@ -13,6 +13,13 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,11 +30,18 @@ import java.util.HashMap;
 public class passbook extends AppCompatActivity {
     TextView wal, t;
     String publicKey;
-   private String payments;
+    private String payments;
     private String TAG = passbook.class.getSimpleName();
     public ListView lv;
     private ProgressDialog pDialog;
     public ArrayList<HashMap<String, String>> history;
+    private String phone;
+    private String rpubK;
+    private String to_id, from_id, amount, timestamp;
+    private DatabaseReference myRef;
+    private FirebaseAuth mAuth; //FirebaseAuth object for Authentication
+    private FirebaseAuth.AuthStateListener mAuthListener; //Listener for FirebaseAuth object
+    private HashMap<String,String> entry;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,9 +58,11 @@ public class passbook extends AppCompatActivity {
                 startActivity(new Intent(getApplicationContext(),Home_page.class));
             }
         });
+        myRef = FirebaseDatabase.getInstance().getReference().child("users");
+        mAuth = FirebaseAuth.getInstance();
 
         publicKey=getIntent().getStringExtra("pub");
-        payments="https://horizon-testnet.stellar.org/accounts/"+publicKey+"/payments?limit=30&order=desc";
+        payments="https://horizon-testnet.Stellar.org/accounts/"+publicKey+"/payments?limit=30&order=desc";
 
         wal = (TextView) findViewById(R.id.wallet);
         String b = getIntent().getStringExtra("balance");
@@ -55,6 +71,11 @@ public class passbook extends AppCompatActivity {
         lv= (ListView)findViewById(R.id.list);
 
         new passbook.display_history().execute();
+    }
+
+    public void onBackPressed()
+    {
+        finish();
     }
 
     private class display_history extends AsyncTask<Void, Void, Void> {
@@ -85,16 +106,26 @@ public class passbook extends AppCompatActivity {
                     {
                         //loop for multiple records --- PRAGYA
                         JSONObject ob = rec.getJSONObject(i);
-                        String accid = ob.getString("to");
-                        String amount = ob.getString("amount");
-                        String timestamp = ob.getString("created_at");
-                        HashMap<String, String> entry = new HashMap<>();
+                        to_id = ob.getString("to");
+                        from_id = ob.getString("from");
+                        amount = ob.getString("amount");
+                        timestamp = ob.getString("created_at");
+                         entry = new HashMap<>();
                         // adding each child node to HashMap key => value
 
-                        entry.put("to_acc_id", accid);
-                        entry.put("funds_transferred", amount);
-                        entry.put("time", timestamp);
+                        if(from_id.equals(publicKey)){
+                            entry.put("caption", "Money Sent");
+                            entry.put("acc_id", to_id);
+                            entry.put("funds_transferred", "-"+amount);
+
+                        }
+                        else{
+                            entry.put("caption", "Money Received");
+                            entry.put("acc_id", from_id);
+                            entry.put("funds_transferred", "+"+amount);
+                        }
                         // adding contact to contact list
+                        entry.put("time", timestamp);
                         history.add(entry);
                     }
                 }
@@ -114,10 +145,12 @@ public class passbook extends AppCompatActivity {
                 pDialog.dismiss();
             ListAdapter adapter = new SimpleAdapter(
                     passbook.this, history,
-                    R.layout.list_item_passbook, new String[]{"to_acc_id", "funds_transferred", "time"},
-                    new int[]{R.id.rec_id, R.id.balance, R.id.time_stamp});
+                    R.layout.list_item_passbook, new String[]{"caption","acc_id", "funds_transferred", "time"},
+                    new int[]{R.id.title,R.id.rec_id, R.id.balance, R.id.time_stamp});
 
             lv.setAdapter(adapter);
         }
     }
+
+
 }

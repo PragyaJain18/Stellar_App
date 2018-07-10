@@ -12,6 +12,11 @@
             android:id="@+id/change"
             android:icon="@drawable/password"
             android:title="Change Password" />
+        <item
+            android:id="@+id/change_pin"
+            android:icon="@drawable/changepin"
+            android:title="Change Pin" />
+
 
     </group>
 

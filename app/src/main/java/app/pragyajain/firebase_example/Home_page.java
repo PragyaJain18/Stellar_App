@@ -19,6 +19,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.GridLayout;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -32,6 +33,7 @@ import com.google.firebase.database.ValueEventListener;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,29 +45,38 @@ public class Home_page extends AppCompatActivity
     private FirebaseAuth mAuth; //FirebaseAuth object for Authentication
     private FirebaseAuth.AuthStateListener mAuthListener; //Listener for FirebaseAuth object
     private String uid;
-    private String u;
+    private String pub;
     private String v;
-    public String accno, bal;
-    //String userId = "GCNE242XH5PQ7JPS7EII52HPV6HDBYDZWO57WFEQJG5G737DOF4ZAAYM";
-    String userId;
+    private String email;
+    private String name;
+    private String bal;
 
     private String profile;
     private String TAG = Home_page.class.getSimpleName();
-    TextView accountID, current_balance;
+    private TextView accountHolder;
+    private TextView current_balance;
+
+    private ImageButton passbook;
+    private ImageButton send;
+
+    private TextView nav_user;
+    private TextView nav_mail;
+
     private ProgressDialog pDialog;
-    GridLayout gridLayout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_page);
 
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        gridLayout=(GridLayout)findViewById(R.id.mainGrid);
-        setSingleEvent(gridLayout);
-        accountID = (TextView)findViewById(R.id.user_id);
+       // gridLayout=(GridLayout)findViewById(R.id.mainGrid);
+        //setSingleEvent(gridLayout);
+        accountHolder = (TextView)findViewById(R.id.user_id);
         current_balance = (TextView)findViewById(R.id.balance);
+        passbook=(ImageButton)findViewById(R.id.passbook);
+        send=(ImageButton)findViewById(R.id.transfer);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -75,54 +86,46 @@ public class Home_page extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        View hview= navigationView.getHeaderView(0);
+        nav_user = (TextView)hview.findViewById(R.id.textv);
+        nav_mail =(TextView)hview.findViewById(R.id.memail);
 
-        myRef = FirebaseDatabase.getInstance().getReference();
+        getData();
 
-        mAuth = FirebaseAuth.getInstance();
+        passbook.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(Home_page.this,passbook.class);
+                i.putExtra("balance",bal);
+                i.putExtra("pub",pub);
+                startActivity(i);
+            }
+        });
 
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        uid=user.getUid();
-
-     getData(uid);
+        send.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent j =new Intent(Home_page.this,SendActivity.class);
+                j.putExtra("balance",bal);
+                startActivity(j);
+            }
+        });
     }
-    private void setSingleEvent(GridLayout gridLayout) {
-        for(int i = 0; i<gridLayout.getChildCount();i++){
-            CardView cardView=(CardView)gridLayout.getChildAt(i);
-            final int finalI= i;
-            cardView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    //Toast.makeText(Home.this,"Clicked at index "+ finalI, Toast.LENGTH_SHORT).show();
-                    if(finalI == 0)
-                    {
-                        Intent intent = new Intent(Home_page.this, passbook.class);
-                        Bundle wallet = new Bundle();
-                        wallet.putString("balance", bal);
-                        intent.putExtras(wallet);
-                        intent.putExtra("pub",u);
-                        startActivity(intent);
-                    }
-                    else if (finalI == 1)
-                    {
-                        Intent intent = new Intent(Home_page.this, SendActivity.class);
-                        intent.putExtra("pub",u);
-                        intent.putExtra("pvt",v);
-                        startActivity(intent);
-                    }
-                }
-            });
-        }
+    protected void onDestroy()
+    {
+        super.onDestroy();
     }
-
     private void showProgressDialog() {
-            if (pDialog != null && !pDialog.isShowing())
-            pDialog .show();
+            //if (pDialog != null && !pDialog.isShowing())
+            //pDialog .show();
+        pDialog = new ProgressDialog(Home_page.this);
+        pDialog.setMessage("Please wait...");
+        pDialog.setCancelable(false);
+        pDialog.show();
     }
-    /**
-     * Method to hide progress dialog
-     */
+
     private void hideProgressDialog() {
-        if (pDialog != null && pDialog.isShowing())
+        if (pDialog.isShowing())
             pDialog.dismiss();
     }
     private class updateText extends AsyncTask<String, String, String>
@@ -139,8 +142,8 @@ public class Home_page extends AppCompatActivity
         protected String doInBackground(String... arg0) {
             HttpHandler sh = new HttpHandler();
             // Making a request to url and getting response
-            String p = arg0[0];
-            String file = sh.makeServiceCall(p);
+            String profile_url = arg0[0];
+            String file = sh.makeServiceCall(profile_url);
             Log.e(TAG, "Response from url: " + file);
             if (file != null)
             {
@@ -155,8 +158,9 @@ public class Home_page extends AppCompatActivity
             if (pDialog.isShowing())
                 pDialog.dismiss();
             try {
+                //String mfile = file.substring(0, file.indexOf(" "));
+                //String mname = file.substring(file.indexOf(" "));
                 JSONObject obj = new JSONObject(file);
-                accno = obj.getString("id");
                 JSONArray balance = obj.getJSONArray("balances");
                 for(int i=0;i<balance.length();i++)
                 {
@@ -165,14 +169,10 @@ public class Home_page extends AppCompatActivity
                     if(asset.equals("native"))
                     {
                         bal = b.getString("balance");
-                        accountID.setText(accno);
                         current_balance.setText(bal);
                         break;
                     }
-                    else
-                        accountID.setText("Faulty");
                 }
-
             } catch (JSONException e) {
                 Log.e(TAG, "Json parsing error: " + e.getMessage());
             }
@@ -216,19 +216,32 @@ public class Home_page extends AppCompatActivity
         {
             Intent intent = new Intent(this, change_pswd.class);
             startActivity(intent);
-        } else if (id == R.id.logout)
-        {   mAuth.signOut();
-            Intent intent = new Intent(this, MainActivity.class);
+        }
+        else if(id == R.id.change_pin)  {
+            Intent intent = new Intent(this, ChangePin.class);
             startActivity(intent);
+
+        } else if (id == R.id.logout)
+        {   mAuth = FirebaseAuth.getInstance();
+            mAuth.signOut();
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            this.finish();
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
-    public void getData(String uid)
+   public void getData()
     {
         showProgressDialog();
+        myRef = FirebaseDatabase.getInstance().getReference();
+        mAuth = FirebaseAuth.getInstance();
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        uid=user.getUid();
         myRef= myRef.child("users").child(uid);
         myRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -238,25 +251,27 @@ public class Home_page extends AppCompatActivity
                 if (dataSnapshot == null) {
                     return;
                 }
-
-                HashMap<String,String> user =(HashMap<String, String>) dataSnapshot.getValue();
-//                HashMap<String,String> user = (HashMap<String, String>) dataSnapshot.getValue();
+               // HashMap<String,String> user =(HashMap<String, String>) dataSnapshot.child(uid).getChildren();
+                 HashMap<String,String> user = (HashMap<String, String>) dataSnapshot.getValue();
 //              String u =dataSnapshot.child("publicKey").getValue().toString();
-                u = user.get("publicKey");
-                v= user.get("privateKey");
-                profile = "https://horizon-testnet.stellar.org/accounts/" + u;
+                pub = user.get("publicKey");
+                email = user.get("email");
+                name = user.get("username");
+                accountHolder.setText(name);
+
+                nav_user.setText(name);
+                nav_mail.setText(email);
+
+                profile = "https://horizon-testnet.Stellar.org/accounts/" + pub;
                 hideProgressDialog();
                 new  updateText().execute(profile);
-               // Log.d(TAG, "Value is: " + value);
-        }
-
+                // Log.d(TAG, "Value is: " + value);
+            }
             @Override
             public void onCancelled(DatabaseError error) {
                 // Failed to read value
                 Log.w(TAG, "Failed to read value.", error.toException());
             }
         });
-
     }
-
-}
+}//end of class
