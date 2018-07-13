@@ -1,6 +1,7 @@
 package app.pragyajain.firebase_example;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -12,6 +13,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -91,13 +93,17 @@ public class SendActivity extends AppCompatActivity
 
               wal=(TextView)findViewById(R.id.wallet);
         balance=getIntent().getStringExtra("balance");
-        wal.setText(balance);
+        float wallet = Float.parseFloat(balance);
+        wal.setText("$ " +String.format("%.2f", wallet));
 
         builder = new AlertDialog.Builder(SendActivity.this);
         mcustid=(EditText)findViewById(R.id.customer_id);
         mamount=(EditText)findViewById(R.id.payamt);
 
         msend=(Button)findViewById(R.id.send);
+
+        OnFocusChange(mcustid);
+        OnFocusChange(mamount);
 
         msend.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -106,6 +112,7 @@ public class SendActivity extends AppCompatActivity
                 {
                     return ;
                 }
+                ((InputMethodManager) getApplicationContext().getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(view.getWindowToken(), 0);
 //                mid = mcustid.getText().toString();
                 mamt= mamount.getText().toString();
                 if(Integer.parseInt(mamt)>0)
@@ -135,15 +142,13 @@ public class SendActivity extends AppCompatActivity
         });
     }
 
-    public void onBackPressed()
-    {
-        finish();
-    }
     public void alertbox(){
         builder.setMessage("Are You Sure ! \n You want to Transfer"+"\n\n To: "+mid+"\n\n Amount: "+mamt)
                 .setCancelable(false)
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
+
+                        dialog.dismiss();
                         hello();
                     }
                 })
@@ -161,10 +166,9 @@ public class SendActivity extends AppCompatActivity
         alert.show();
     }
 
-    private void hello()
-    {
+    private void hello(){
         LayoutInflater li = LayoutInflater.from(SendActivity.this);
-        View promptsView = li.inflate(R.layout.prompts, null);
+        final View promptsView = li.inflate(R.layout.prompts, null);
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(SendActivity.this);
         // set prompts.xml to alertdialog builder
@@ -178,6 +182,7 @@ public class SendActivity extends AppCompatActivity
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 if(userInput.getText().toString().equals(pin)){
+                                    ((InputMethodManager) getApplicationContext().getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(promptsView.getWindowToken(), 0);
                                     new SendPostRequest().execute();
                                 }
                                 else{
@@ -215,6 +220,7 @@ public class SendActivity extends AppCompatActivity
         mAuth = FirebaseAuth.getInstance();
         mid = mcustid.getText().toString();
         myRef.addValueEventListener(new ValueEventListener() {
+
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // This method is called once with the initial value and again
@@ -222,20 +228,14 @@ public class SendActivity extends AppCompatActivity
                 if (dataSnapshot == null) {
                     return;
                 }
-
-                // HashMap<String,String> user =(HashMap<String, String>) dataSnapshot.child(uid).getChildren();
                 for (DataSnapshot mDataSnapshot : dataSnapshot.getChildren()) {
-
-//                    HashMap<String,String> user = (HashMap<String, String>) mDataSnapshot.child(bup).getValue();
                     phone= (String) String.valueOf(mDataSnapshot.child("phone").getValue());
-                   // phone =user.get("phone");
                     if(phone.contentEquals(mid)){
                         flag = true;
                         rpubK= (String) mDataSnapshot.child("publicKey").getValue();
                         alertbox();
                         break;
                     }
-
                 }
                 if(flag==false){
                     AlertDialog alertDialog2 = new AlertDialog.Builder(SendActivity.this).create();
@@ -250,7 +250,6 @@ public class SendActivity extends AppCompatActivity
                     alertDialog2.show();
                     return;
                 }
-
                 Log.d(TAG, "Value is: " + rpubK);
             }
             @Override
@@ -259,7 +258,6 @@ public class SendActivity extends AppCompatActivity
                 Log.w(TAG, "Failed to read value.", error.toException());
             }
         });
-
     }
 
     public void getData()
@@ -280,10 +278,8 @@ public class SendActivity extends AppCompatActivity
                 if (dataSnapshot == null) {
                     return;
                 }
-
-                // HashMap<String,String> user =(HashMap<String, String>) dataSnapshot.child(uid).getChildren();
                 HashMap<String,String> user = (HashMap<String, String>) dataSnapshot.getValue();
-                mphone = user.get("phone");
+                mphone = (String) String.valueOf(user.get("phone"));
                 pin=user.get("pin");
                 pubK = user.get("publicKey");
                 pvtK= user.get("privateKey");
@@ -324,18 +320,18 @@ public class SendActivity extends AppCompatActivity
             try{
                 //hashMap function to be called
                 //HashMap(mid);
-                URL url = new URL("http://192.168.13.58:4000/Payment");
+                URL url = new URL("http://192.168.20.68:4000/Payment");
                 JSONObject postDataParams = new JSONObject();
                 postDataParams.put("senderPublicKey", pubK);//public key of sender
                 postDataParams.put("senderPrivateKey",pvtK );// private key of sender
                 postDataParams.put("receiverPublicKey",rpubK);//public key of receiver
-
-                postDataParams.put("amount",mamt);
+                postDataParams.put("amount","5");
+                postDataParams.put("currency_type", "USD");
                 Log.e("params",postDataParams.toString());
 
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setReadTimeout(15000 /* milliseconds */);
-                conn.setConnectTimeout(15000 /* milliseconds */);
+                conn.setReadTimeout(30000 /* milliseconds */);
+                conn.setConnectTimeout(30000 /* milliseconds */);
                 conn.setRequestMethod("POST");
                 conn.setDoInput(true);
                 conn.setDoOutput(true);
@@ -382,13 +378,10 @@ public class SendActivity extends AppCompatActivity
                 {
                     //go to transaction_success activity
                 }
-
-                //Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-
             } catch (Exception e) {
                 Log.e(TAG, "Json parsing error: " + e.getMessage());
             }
-           // test.setText(result);
+
             AlertDialog alertDialog = new AlertDialog.Builder(SendActivity.this).create();
             alertDialog.setTitle("Status");
             alertDialog.setMessage(message);
@@ -457,10 +450,39 @@ public class SendActivity extends AppCompatActivity
             mamount.setError("Required.");
             valid = false;
         } else {
+            if((Integer.parseInt(amount)<=0) && (Integer.parseInt(amount)>=Integer.parseInt(balance)))
+            {
+                AlertDialog alertDialog2 = new AlertDialog.Builder(SendActivity.this).create();
+                alertDialog2.setTitle("Failed");
+                alertDialog2.setMessage("Re-enter amount");
+                alertDialog2.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                alertDialog2.show();
+            }
             mamount.setError(null);
         }
 
         return valid;
+    }
+
+    public void OnFocusChange(EditText view) {
+        view.setOnFocusChangeListener(new View.OnFocusChangeListener()
+        {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    // Open keyboard
+                    ((InputMethodManager) getApplicationContext().getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(v, InputMethodManager.SHOW_FORCED);
+                } else {
+                    // Close keyboard
+                    ((InputMethodManager) getApplicationContext().getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(v.getWindowToken(), 0);
+                }
+            }
+        });
     }
 }//end of class
 

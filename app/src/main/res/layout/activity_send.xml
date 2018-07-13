@@ -4,7 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="app.pragyajain.firebase_example.SendActivity">
+    tools:context="app.pragyajain.firebase_example.SendActivity"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:clickable="true">
 
     <android.support.v7.widget.Toolbar
 
@@ -78,7 +81,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Amount"
-                android:inputType="number" />
+                android:inputType="number|numberDecimal" />
         </android.support.design.widget.TextInputLayout>
 
         <Button
