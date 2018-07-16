@@ -320,7 +320,7 @@ public class SendActivity extends AppCompatActivity
             try{
                 //hashMap function to be called
                 //HashMap(mid);
-                URL url = new URL("http://192.168.20.68:4000/Payment");
+                URL url = new URL("http://192.168.12.248:4000/Payment");
                 JSONObject postDataParams = new JSONObject();
                 postDataParams.put("senderPublicKey", pubK);//public key of sender
                 postDataParams.put("senderPrivateKey",pvtK );// private key of sender
