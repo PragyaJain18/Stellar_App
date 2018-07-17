@@ -325,7 +325,7 @@ public class SendActivity extends AppCompatActivity
                 postDataParams.put("senderPublicKey", pubK);//public key of sender
                 postDataParams.put("senderPrivateKey",pvtK );// private key of sender
                 postDataParams.put("receiverPublicKey",rpubK);//public key of receiver
-                postDataParams.put("amount","5");
+                postDataParams.put("amount",mamt);
                 postDataParams.put("currency_type", "USD");
                 Log.e("params",postDataParams.toString());
 
