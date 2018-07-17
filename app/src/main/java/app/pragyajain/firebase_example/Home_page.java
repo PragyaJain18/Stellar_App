@@ -108,13 +108,16 @@ public class Home_page extends AppCompatActivity
                 Intent j =new Intent(Home_page.this,SendActivity.class);
                 j.putExtra("balance",bal);
                 startActivity(j);
+                finish();
             }
         });
     }
+
     protected void onDestroy()
     {
         super.onDestroy();
     }
+
     private void showProgressDialog() {
             //if (pDialog != null && !pDialog.isShowing())
             //pDialog .show();
@@ -128,8 +131,8 @@ public class Home_page extends AppCompatActivity
         if (pDialog.isShowing())
             pDialog.dismiss();
     }
-    private class updateText extends AsyncTask<String, String, String>
-    {
+
+    private class updateText extends AsyncTask<String, String, String> {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -165,11 +168,12 @@ public class Home_page extends AppCompatActivity
                 for(int i=0;i<balance.length();i++)
                 {
                     JSONObject b = balance.getJSONObject(i);
-                    String asset = b.getString("asset_type");
-                    if(asset.equals("native"))
+                    String asset = b.getString("asset_code");
+                    if(asset.equals("USD"))
                     {
                         bal = b.getString("balance");
-                        current_balance.setText(bal);
+                        float wallet = Float.parseFloat(bal);
+                        current_balance.setText("$ " + String.format("%.2f", wallet));
                         break;
                     }
                 }
@@ -212,7 +216,11 @@ public class Home_page extends AppCompatActivity
         {
             Intent intent = new Intent(this, Home_page.class);
             startActivity(intent);
-        } else if (id == R.id.change)
+        }else if(id==R.id.profile){
+            Intent intent = new Intent(this,Show_Profile.class);
+            startActivity(intent);
+        }
+        else if (id == R.id.change)
         {
             Intent intent = new Intent(this, change_pswd.class);
             startActivity(intent);
@@ -225,7 +233,7 @@ public class Home_page extends AppCompatActivity
         {   mAuth = FirebaseAuth.getInstance();
             mAuth.signOut();
             Intent intent = new Intent(this, MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             this.finish();
         }

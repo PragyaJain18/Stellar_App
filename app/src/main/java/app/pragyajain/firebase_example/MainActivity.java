@@ -1,6 +1,8 @@
 package app.pragyajain.firebase_example;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v7.app.AlertDialog;
@@ -9,7 +11,10 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -40,15 +45,13 @@ public class MainActivity extends AppCompatActivity {
             super.onCreate(savedInstanceState);
             setContentView(R.layout.activity_main);
 
-//            Toolbar toolbar=(Toolbar)findViewById(R.id.my_toolbar);
-//            toolbar.setTitle("Stellar");
-
             mProgressDialog = new ProgressDialog(this);
             mProgressDialog.setMessage("Please Wait...");
             mProgressDialog.setCancelable(false);
 
             mEmailField =(EditText)findViewById(R.id.mail_id);
             mPasswordField=(EditText)findViewById(R.id.password);
+
 
             mAuth = FirebaseAuth.getInstance();
             mAuthListener = new FirebaseAuth.AuthStateListener() {
@@ -67,12 +70,20 @@ public class MainActivity extends AppCompatActivity {
 
             mLogin=(Button)findViewById(R.id.log_in);
             mSign=(Button)findViewById(R.id.signup);
-
+//            setupParent();
+            OnFocusChange(mEmailField);
+            OnFocusChange(mPasswordField);
             mLogin.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    try{
+                        ((InputMethodManager) getApplicationContext().getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    }catch (Exception e)
+                    {
+                        Log.e(TAG, "Exception");
+                    }
                     signIn(mEmailField.getText().toString(),mPasswordField.getText().toString());
-                                   }
+                }
             });
 
             mSign.setOnClickListener(new View.OnClickListener() {
@@ -98,22 +109,18 @@ public class MainActivity extends AppCompatActivity {
                 mAuth.removeAuthStateListener(mAuthListener);
             }
         }
-        /**
-         * Method to show progress dialog
-         */
+
         private void showProgressDialog() {
             if (mProgressDialog != null && !mProgressDialog.isShowing())
                 mProgressDialog.show();
         }
-        /**
-         * Method to hide progress dialog
-         */
-    private void hideProgressDialog() {
+
+        private void hideProgressDialog() {
         if (mProgressDialog != null && mProgressDialog.isShowing())
                mProgressDialog.dismiss();
     }
 
-    private void signIn(String email, String password) {
+        private void signIn(String email, String password) {
 
         if (!validateForm()) {
               return;
@@ -128,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
 
                                 Intent success = new Intent(MainActivity.this,Home_page.class);
                                 startActivity(success);
-                                finish();
+                                //finish();
                             }else
                                 {
                                 Log.e(TAG,"Sign in Failed with error :"+task.getException());
@@ -171,4 +178,21 @@ public class MainActivity extends AppCompatActivity {
 
             return valid;
         }
+
+    public void OnFocusChange(EditText view) {
+        view.setOnFocusChangeListener(new View.OnFocusChangeListener()
+        {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    // Open keyboard
+                    ((InputMethodManager) getApplicationContext().getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(v, InputMethodManager.SHOW_FORCED);
+                } else {
+                    // Close keyboard
+                    ((InputMethodManager) getApplicationContext().getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(v.getWindowToken(), 0);
+                }
+            }
+        });
+    }
+
 }//end

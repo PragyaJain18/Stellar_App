@@ -47,7 +47,8 @@
             android:fontFamily="casual"
             android:text="Available Balance"
             android:textAlignment="center"
-            android:textColor="#f20226f2"
+
+            android:textColor="#0230e6"
             android:textSize="24sp"
             android:textStyle="bold|italic" />
     </LinearLayout>
